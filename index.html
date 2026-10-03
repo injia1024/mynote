@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 黑板板書轉多頁 A4 手寫筆記</title>
+    <title>AI 黑板板書轉多頁 A4 筆記</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
@@ -162,7 +162,7 @@
 
         .a4-page {
             width: 100%;
-            max-width: 794px; /* A4 比例 */
+            max-width: 794px;
             min-height: 1123px;
             background-color: var(--paper-bg);
             background-image: 
@@ -193,10 +193,10 @@
 
         /* 筆記樣式 */
         .note-title-box { border-bottom: 2px solid var(--ink-black); padding-bottom: 6px; margin-bottom: 16px; }
-        .note-title { font-size: 1.6rem; font-weight: 600; background: var(--highlight-yellow); padding: 2px 8px; border-radius: 4px; }
+        .note-title { font-size: 1.6rem; font-weight: 600; background: var(--highlight-yellow); padding: 2px 8px; border-radius: 4px; display: inline-block; }
         .note-section { margin-bottom: 18px; }
         .section-header { font-size: 1.2rem; font-weight: 600; margin-bottom: 8px; }
-        .section-header::before { content: '✏️ '; }
+        .section-header::before { content: '✏️️ '; }
         .text-red { color: var(--ink-red); font-weight: 600; }
         .text-blue { color: var(--ink-blue); }
         .highlight { background: var(--highlight-yellow); padding: 0 4px; }
@@ -226,13 +226,13 @@
     <div class="container">
         <header class="no-print">
             <h1>📝 AI 黑板板書轉多頁 A4 筆記</h1>
-            <p class="subtitle">支援多張照片連貫辨識 ➔ 自動產生第 1、2、3 頁手帳風 A4 筆記</p>
+            <p class="subtitle">連貫辨識板書 ➔ 自動拆分成多頁手帳風格 A4 筆記</p>
         </header>
 
         <div class="card no-print">
             <div class="input-group">
                 <label>Gemini API Key</label>
-                <input type="password" id="apiKey" placeholder="請貼上 API Key (例如: AIzaSy...)">
+                <input type="password" id="apiKey" placeholder="請貼上你的 API Key (例如: AIzaSy...)">
             </div>
 
             <div class="upload-box" onclick="document.getElementById('fileInput').click()">
@@ -243,14 +243,14 @@
         </div>
 
         <div class="btn-group no-print">
-            <button class="btn btn-primary" onclick="analyzeBoardImages()">🤖 AI 分析並生成多頁筆記</button>
+            <button class="btn btn-primary" onclick="analyzeBoardImages()">🤖 Gemini 3.8-Flash AI 分析生成多頁筆記</button>
             <button class="btn btn-secondary" onclick="addEmptyPage()">+ 新增手寫空白頁</button>
             <button class="btn btn-success" onclick="window.print()">🖨️ 列印 / 匯出多頁 A4 PDF</button>
         </div>
 
         <div id="loading" class="loading no-print">
             <div class="spinner"></div>
-            <p>Gemini AI 正在辨識多張板書並邏輯拆分頁面中...</p>
+            <p>Gemini 3.8-Flash 正在分析板書並邏輯拆分頁面中...</p>
         </div>
 
         <!-- 筆記多頁展示區 -->
@@ -263,9 +263,9 @@
                 </div>
 
                 <div class="note-section">
-                    <div class="section-header">了解地球的方法</div>
+                    <div class="section-header">了解地球內部的方法</div>
                     <ul>
-                        <li><span class="highlight">直接觀察</span>：鑽岩芯（大陸地殼：花崗岩 / 海洋地殼：玄武岩）。</li>
+                        <li><span class="highlight">直接觀察</span>：鑽探岩芯（大陸地殼：花崗岩 / 海洋地殼：玄武岩）。</li>
                         <li><span class="highlight">間接推理</span>：捕獲岩（地函噴出之橄欖岩）。</li>
                         <li><span class="highlight">間接觀測</span>：地震波觀測。</li>
                     </ul>
@@ -315,7 +315,7 @@
     <script>
         let compressedImages = [];
 
-        // 圖片上傳並自動壓縮（防止 API 封包過大失敗）
+        // 圖片上傳並自動壓縮
         async function handleFiles(e) {
             const files = Array.from(e.target.files);
             const thumbList = document.getElementById('thumbList');
@@ -323,7 +323,7 @@
             compressedImages = [];
 
             for (let file of files) {
-                const base64 = await compressImage(file, 1024); // 限制長邊 1024px
+                const base64 = await compressImage(file, 1024);
                 compressedImages.push(base64);
 
                 const img = document.createElement('img');
@@ -369,20 +369,20 @@
 
             document.getElementById('loading').style.display = 'block';
 
-            // 指令要求 AI 自動拆分為多頁 JSON
-            const prompt = `你是一個筆記整理專家。請閱讀上傳的黑板照片，將內容完整梳理並「拆分成多頁 A4 筆記」。
-請回傳一個 JSON 陣列，每個元素代表一頁 A4 HTML 內容。
-格式要求：
+            // 指令：使用 gemini-3.8-flash 拆分頁面
+            const prompt = `你是一個筆記整理專家。請完整閱讀上傳的黑板照片，將內容整理並「拆分成多頁 A4 筆記」。
+請回傳一個 JSON 陣列，陣列每個元素代表一頁 A4 筆記的 HTML 內容。
+格式範例：
 [
-  "<div class=\\"note-title-box\\"><div class=\\"note-title\\">主題</div></div><div class=\\"note-section\\">...</div>",
-  "<div class=\\"note-section\\"><div class=\\"section-header\\">續：主題...</div>...</div>"
+  "<div class=\\"note-title-box\\"><div class=\\"note-title\\">主題</div></div><div class=\\"note-section\\"><div class=\\"section-header\\">小標</div><ul><li>重點</li></ul></div>",
+  "<div class=\\"note-section\\"><div class=\\"section-header\\">第二頁小標</div><table>...</table></div>"
 ]
-HTML 內部標記規則：
-- 重點/標籤：<span class="highlight">螢光文字</span>
+HTML 標記規範：
+- 重點/標籤：<span class="highlight">螢光黃</span>
 - 極重要關鍵字：<span class="text-red">紅字</span>
 - 補充說明：<span class="text-blue">藍字</span>
-- 表格用標準 <table>，清單用 <ul><li>。
-注意：請直接回傳純 JSON 陣列，不要加入 Markdown \`\`\`json 標籤。`;
+- 表格用 <table>，項目用 <ul><li>。
+注意：請務必只回傳純 JSON 陣列格式，嚴禁輸出 Markdown 標籤或說明文字！`;
 
             const contents = [{
                 parts: [
@@ -394,8 +394,8 @@ HTML 內部標記規則：
             }];
 
             try {
-                // 使用官方標準 gemini-2.5-flash
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+                // 使用官方指定的 gemini-3.8-flash 模型
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ contents })
@@ -408,14 +408,20 @@ HTML 內部標記規則：
                     return;
                 }
 
+                // 提取 AI 回傳的文字並精準抓取 JSON 陣列
                 let responseText = data.candidates[0].content.parts[0].text;
-                responseText = responseText.replace(/```json/g, '').replace(/```html/g, '').replace(/```/g, '').trim();
-
+                
+                // 清除可能包含的 markdown 或 Thinking 區塊
+                const jsonMatch = responseText.match(/\[[\s\S]*\]/);
                 let pagesHtmlArray = [];
-                try {
-                    pagesHtmlArray = JSON.parse(responseText);
-                } catch (e) {
-                    // 若 JSON 解析失敗，作為單頁顯示
+
+                if (jsonMatch) {
+                    try {
+                        pagesHtmlArray = JSON.parse(jsonMatch[0]);
+                    } catch (e) {
+                        pagesHtmlArray = [responseText];
+                    }
+                } else {
                     pagesHtmlArray = [responseText];
                 }
 
@@ -436,7 +442,7 @@ HTML 內部標記規則：
 
             } catch (err) {
                 console.error(err);
-                alert('連線失敗，請檢查網路或 API Key。');
+                alert('連線失敗，請確認網路或 API Key！');
             } finally {
                 document.getElementById('loading').style.display = 'none';
             }
@@ -452,7 +458,7 @@ HTML 內部標記規則：
                 <div class="page-badge no-print">PAGE 0${pageCount}</div>
                 <div class="note-section">
                     <div class="section-header">新主題</div>
-                    <ul><li>點擊此處開始手寫輸入內容...</li></ul>
+                    <ul><li>點擊此處開始編輯內容...</li></ul>
                 </div>
             `;
             container.appendChild(pageDiv);
